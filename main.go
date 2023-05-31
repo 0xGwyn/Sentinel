@@ -51,7 +51,7 @@ func run() error {
 	app.Use(cors.New())
 
 	// add routes
-	router.AddCompanyGroup(app)
+	router.AddDomainGroup(app)
 
 	// start server
 	var port string

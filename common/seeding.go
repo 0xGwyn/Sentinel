@@ -10,111 +10,80 @@ import (
 )
 
 func Seeding() error {
-	coll := GetDBCollection("companies")
+	coll := GetDBCollection("domains")
 
 	// Insert some seed data
-	company1 := models.Company{
+	domain1 := models.Domain{
 		ID:   primitive.NewObjectID(),
-		Name: "Google",
-		Domains: []models.Domain{
+		Name: "apple.com",
+		Subdomains: []models.Subdomain{
 			{
-				ID:   primitive.NewObjectID(),
-				Name: "google.com",
-				Subdomains: []models.Subdomain{
-					{
-						ID:         primitive.NewObjectID(),
-						Name:       "www.google.com",
-						StatusCode: "200",
-						Title:      "Google",
-						CDN:        "Google Cloud",
-						Technology: "AngularJS",
-						CreatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-						UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-						Paths:      []string{"/search", "/images", "/maps"},
-					},
-					{
-						ID:    primitive.NewObjectID(),
-						Name:  "api.google.com",
-						Paths: []string{"/inbox", "/sent", "/drafts"},
-					},
-				},
+				ID:         primitive.NewObjectID(),
+				Name:       "www.apple.com",
+				StatusCode: "200",
+				Title:      "Apple",
+				CDN:        "Akamai",
+				Technology: "React",
+				CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-24 * time.Hour)),
+				UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+				Paths:      []string{"/mac", "/iphone", "/ipad"},
 			},
 		},
 	}
 
-	company2 := models.Company{
+	domain2 := models.Domain{
 		ID:   primitive.NewObjectID(),
-		Name: "Apple",
-		Domains: []models.Domain{
+		Name: "example.com",
+		Subdomains: []models.Subdomain{
 			{
-				ID:   primitive.NewObjectID(),
-				Name: "apple.com",
-				Subdomains: []models.Subdomain{
-					{
-						ID:         primitive.NewObjectID(),
-						Name:       "www.apple.com",
-						StatusCode: "200",
-						Title:      "Apple",
-						CDN:        "Akamai",
-						Technology: "React",
-						CreatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-						UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-						Paths:      []string{"/mac", "/iphone", "/ipad"},
-					},
-				},
+				ID:         primitive.NewObjectID(),
+				Name:       "www",
+				StatusCode: "200 OK",
+				Title:      "Example Domain",
+				CDN:        "Cloudflare",
+				Technology: "Nginx",
+				CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-24 * time.Hour)),
+				UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+				IPs:        []string{"192.0.2.1", "192.0.2.2"},
+				Providers:  []string{"Google Cloud", "DigitalOcean"},
+				Paths:      []string{"/", "/about", "/contact"},
 			},
 		},
 	}
 
-	company3 := models.Company{
+	domain3 := models.Domain{
 		ID:   primitive.NewObjectID(),
-		Name: "Microsoft",
-		Domains: []models.Domain{
+		Name: "google.com",
+		Subdomains: []models.Subdomain{
 			{
-				ID:   primitive.NewObjectID(),
-				Name: "microsoft.com",
-				Subdomains: []models.Subdomain{
-					{
-						ID:         primitive.NewObjectID(),
-						StatusCode: "200",
-						Title:      "Microsoft",
-						CDN:        "Akamai",
-						Technology: "React",
-						CreatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-						UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-						Paths:      []string{"/windows", "/office", "/surface"},
-					},
-					{
-						ID:    primitive.NewObjectID(),
-						Name:  "azure.microsoft.com",
-						Paths: []string{"/pricing", "/docs", "/support"},
-					},
-				},
+				ID:         primitive.NewObjectID(),
+				Name:       "www",
+				StatusCode: "200 OK",
+				Title:      "Google",
+				CDN:        "Google Cloud CDN",
+				Technology: "Google Web Server",
+				CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-48 * time.Hour)),
+				UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+				IPs:        []string{"172.217.6.68", "172.217.6.67"},
+				Providers:  []string{"Google Cloud", "Akamai"},
+				Paths:      []string{"/", "/about", "/search"},
 			},
 			{
-				ID:   primitive.NewObjectID(),
-				Name: "github.com/microsoft",
-				Subdomains: []models.Subdomain{
-					{
-						ID:         primitive.NewObjectID(),
-						Name:       "github.com/microsoft/vscode",
-						StatusCode: "200",
-						Title:      "Visual Studio Code",
-						Technology: "Electron",
-						CreatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-						UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-						Paths:      []string{"/docs", "/extensions", "/settings"},
-					},
-					{
-						ID:    primitive.NewObjectID(),
-						Paths: []string{"/docs", "/samples", "/community"},
-					},
-				},
+				ID:         primitive.NewObjectID(),
+				Name:       "mail",
+				StatusCode: "200 OK",
+				Title:      "Gmail",
+				CDN:        "",
+				Technology: "Google Web Server",
+				CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-48 * time.Hour)),
+				UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+				Providers:  []string{"Google Cloud", "Akamai"},
+				Paths:      []string{"/", "/inbox", "/settings"},
 			},
 		},
 	}
 
-	_, err := coll.InsertMany(context.Background(), []interface{}{company1, company2, company3})
+	_, err := coll.InsertMany(context.Background(), []interface{}{domain1, domain2, domain3})
 	if err != nil {
 		return err
 	}
