@@ -10,80 +10,83 @@ import (
 )
 
 func Seeding() error {
-	coll := GetDBCollection("domains")
 
 	// Insert some seed data
 	domain1 := models.Domain{
-		ID:   primitive.NewObjectID(),
-		Name: "apple.com",
-		Subdomains: []models.Subdomain{
-			{
-				ID:         primitive.NewObjectID(),
-				Name:       "www.apple.com",
-				StatusCode: "200",
-				Title:      "Apple",
-				CDN:        "Akamai",
-				Technology: "React",
-				CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-24 * time.Hour)),
-				UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-				Paths:      []string{"/mac", "/iphone", "/ipad"},
-			},
-		},
+		Name:    "apple.com",
+		InScope: []string{"*.apple.com"},
+	}
+	sub1_1 := models.Subdomain{
+		// ID:         primitive.NewObjectID(),
+		Domain:     "apple.com",
+		Name:       "www.apple.com",
+		StatusCode: 200,
+		Title:      "Apple",
+		CDN:        "Akamai",
+		Technology: "React",
+		CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-24 * time.Hour)),
+		UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
 	}
 
 	domain2 := models.Domain{
-		ID:   primitive.NewObjectID(),
-		Name: "example.com",
-		Subdomains: []models.Subdomain{
-			{
-				ID:         primitive.NewObjectID(),
-				Name:       "www",
-				StatusCode: "200 OK",
-				Title:      "Example Domain",
-				CDN:        "Cloudflare",
-				Technology: "Nginx",
-				CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-24 * time.Hour)),
-				UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-				IPs:        []string{"192.0.2.1", "192.0.2.2"},
-				Providers:  []string{"Google Cloud", "DigitalOcean"},
-				Paths:      []string{"/", "/about", "/contact"},
-			},
-		},
+		Name:    "example.com",
+		InScope: []string{"*.example.com"},
+	}
+	sub2_1 := models.Subdomain{
+		// ID:         primitive.NewObjectID(),
+		Domain:     "example.com",
+		Name:       "www.example.com",
+		StatusCode: 200,
+		Title:      "Example Domain",
+		CDN:        "Cloudflare",
+		Technology: "Nginx",
+		CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-24 * time.Hour)),
+		UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+		ARecords:   []string{"192.0.2.1", "192.0.2.2"},
+		Providers:  []string{"crtsh", "subfinder"},
 	}
 
 	domain3 := models.Domain{
-		ID:   primitive.NewObjectID(),
-		Name: "google.com",
-		Subdomains: []models.Subdomain{
-			{
-				ID:         primitive.NewObjectID(),
-				Name:       "www",
-				StatusCode: "200 OK",
-				Title:      "Google",
-				CDN:        "Google Cloud CDN",
-				Technology: "Google Web Server",
-				CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-48 * time.Hour)),
-				UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-				IPs:        []string{"172.217.6.68", "172.217.6.67"},
-				Providers:  []string{"Google Cloud", "Akamai"},
-				Paths:      []string{"/", "/about", "/search"},
-			},
-			{
-				ID:         primitive.NewObjectID(),
-				Name:       "mail",
-				StatusCode: "200 OK",
-				Title:      "Gmail",
-				CDN:        "",
-				Technology: "Google Web Server",
-				CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-48 * time.Hour)),
-				UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
-				Providers:  []string{"Google Cloud", "Akamai"},
-				Paths:      []string{"/", "/inbox", "/settings"},
-			},
-		},
+		Name:       "google.com",
+		OutOfScope: []string{"*.test.google.com"},
+	}
+	sub3_1 := models.Subdomain{
+		// ID:         primitive.NewObjectID(),
+		Domain:     "google.com",
+		Name:       "www",
+		StatusCode: 200,
+		Title:      "Google",
+		CDN:        "Google Cloud CDN",
+		Technology: "Google Web Server",
+		CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-48 * time.Hour)),
+		UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+
+		ARecords:  []string{"172.217.6.68", "172.217.6.67"},
+		Providers: []string{"abuseipdb", "subfinder"},
+	}
+	sub3_2 := models.Subdomain{
+		// ID:         primitive.NewObjectID(),
+		Domain:     "google.com",
+		Name:       "mail",
+		StatusCode: 200,
+		Title:      "Gmail",
+		CDN:        "",
+		Technology: "Google Web Server",
+		CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-48 * time.Hour)),
+		UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+		Providers:  []string{"subfinder"},
 	}
 
-	_, err := coll.InsertMany(context.Background(), []interface{}{domain1, domain2, domain3})
+	// insert domains into DB
+	coll_domains := GetDBCollection("domains")
+	_, err := coll_domains.InsertMany(context.Background(), []interface{}{domain1, domain2, domain3})
+	if err != nil {
+		return err
+	}
+
+	// insert subdomains into DB
+	coll_subdomains := GetDBCollection("subdomains")
+	_, err = coll_subdomains.InsertMany(context.Background(), []interface{}{sub1_1, sub2_1, sub3_1, sub3_2})
 	if err != nil {
 		return err
 	}
