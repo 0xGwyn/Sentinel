@@ -23,6 +23,7 @@ type Subdomain struct {
 	Words        int                `json:"words,omitempty" bson:"words"`
 	Lines        int                `json:"lines,omitempty" bson:"lines"`
 	Failed       bool               `json:"failed,omitempty" bson:"failed"`
+	Watch        bool               `json:"watch,omitempty" bson:"watch"`
 	CnameRecords []string           `json:"cname_records,omitempty" bson:"cname_records"`
 	ARecords     []string           `json:"a_records,omitempty" bson:"a_records"`
 	NSRecords    []string           `json:"ns_records,omitempty" bson:"ns_records"`

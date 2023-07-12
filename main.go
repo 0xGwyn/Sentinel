@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/0xgwyn/sentinel/common"
-	"github.com/0xgwyn/sentinel/router"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+
+	"github.com/0xgwyn/sentinel/common"
+	"github.com/0xgwyn/sentinel/router"
 )
 
 func main() {
 	err := run()
-
 	if err != nil {
 		panic(err)
 	}
@@ -51,7 +51,7 @@ func run() error {
 	app.Use(cors.New())
 
 	// add routes
-	router.AddDomainGroup(app)
+	router.AddRouterGroup(app)
 
 	// start server
 	var port string
