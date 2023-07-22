@@ -1,4 +1,4 @@
-module github.com/0xgwyn/sentinel
+module github.com/0xgwyn/sentinel/sentinel-server
 
 go 1.20
 

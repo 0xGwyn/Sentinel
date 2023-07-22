@@ -9,8 +9,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
-	"github.com/0xgwyn/sentinel/common"
-	"github.com/0xgwyn/sentinel/router"
+	"github.com/0xgwyn/sentinel/sentinel-server/common"
+	"github.com/0xgwyn/sentinel/sentinel-server/router"
 )
 
 func main() {

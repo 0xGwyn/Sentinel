@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/0xgwyn/sentinel/models"
+	"github.com/0xgwyn/sentinel/sentinel-server/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

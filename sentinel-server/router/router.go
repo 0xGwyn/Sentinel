@@ -11,8 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/0xgwyn/sentinel/common"
-	"github.com/0xgwyn/sentinel/models"
+	"github.com/0xgwyn/sentinel/sentinel-server/common"
+	"github.com/0xgwyn/sentinel/sentinel-server/models"
 )
 
 func AddRouterGroup(app *fiber.App) {
