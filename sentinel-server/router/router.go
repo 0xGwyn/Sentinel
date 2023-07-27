@@ -16,7 +16,7 @@ import (
 )
 
 func AddRouterGroup(app *fiber.App) {
-	routerGroup := app.Group("/api/v1/domains")
+	routerGroup := app.Group("/api/domains")
 
 	// domain routes
 	routerGroup.Get("/", getDomains)
