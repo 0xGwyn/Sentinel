@@ -96,9 +96,6 @@ func dnsWorker(dnsClient *dnsx.DNSX, domains <-chan string, output chan<- dnsQue
 		if 0 < len(rawResp.PTR) {
 			queryResponse["ptr"] = rawResp.PTR
 		}
-		if 0 < len(rawResp.SOA) {
-			queryResponse["soa"] = rawResp.SOA
-		}
 		if 0 < len(rawResp.TXT) {
 			queryResponse["txt"] = rawResp.TXT
 		}
