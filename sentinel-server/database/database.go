@@ -1,12 +1,12 @@
-package common
+package database
 
 import (
 	"context"
 	"errors"
-	"os"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/0xgwyn/sentinel/common"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 var db *mongo.Database
@@ -16,16 +16,20 @@ func GetDBCollection(col string) *mongo.Collection {
 }
 
 func InitDB() error {
-	uri := os.Getenv("MONGODB_URI")
-	if uri == "" {
+	uri, err := common.LoadEnv("MONGODB_URI")
+	if err != nil {
 		return errors.New("you must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
+
+	client, err := mongo.Connect(options.Client().ApplyURI(uri))
 	if err != nil {
 		return err
 	}
 
-	dbName := os.Getenv("DATABASE")
+	dbName, err := common.LoadEnv("DATABASE")
+	if err != nil {
+		return err
+	}
 	db = client.Database(dbName)
 
 	return nil

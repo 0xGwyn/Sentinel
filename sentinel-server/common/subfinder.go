@@ -5,12 +5,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"path/filepath"
 	"strings"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/levels"
 	"github.com/projectdiscovery/subfinder/v2/pkg/runner"
+	folderutil "github.com/projectdiscovery/utils/folder"
 	// logutil "github.com/projectdiscovery/utils/log"
 )
 
@@ -22,8 +24,8 @@ func RunSubfinder(domain string) ([]string, error) {
 		Threads:            10,
 		Timeout:            30,
 		MaxEnumerationTime: 10,
-		Config:             filepath.Join(userHomeDir(), ".config/subfinder/config.yaml"),
-		ProviderConfig:     filepath.Join(userHomeDir(), ".config/subfinder/provider-config.yaml"),
+		Config:             filepath.Join(folderutil.HomeDirOrDefault(""), ".config/subfinder/config.yaml"),
+		ProviderConfig:     filepath.Join(folderutil.HomeDirOrDefault(""), ".config/subfinder/provider-config.yaml"),
 	}
 
 	// disable timestamps in logs / configure logger
@@ -37,10 +39,28 @@ func RunSubfinder(domain string) ([]string, error) {
 	}
 
 	output := &bytes.Buffer{}
+	var sourceMap map[string]map[string]struct{}
 	// To run subdomain enumeration on a single domain
-	if err = subfinder.EnumerateSingleDomainWithCtx(context.Background(), domain, []io.Writer{output}); err != nil {
+	if sourceMap, err = subfinder.EnumerateSingleDomainWithCtx(context.Background(), domain, []io.Writer{output}); err != nil {
 		return nil, fmt.Errorf("failed to enumerate single domain(%v): %v", domain, err)
 	}
+
+	// print the output
+	log.Println("PRINTING OUTPUT:")
+	log.Println(output.String())
+
+	// Or use sourceMap to access the results in your application
+	log.Println("--------------------------------")
+	log.Println("PRINTING SOURCE MAP:")
+	for subdomain, sources := range sourceMap {
+		sourcesList := make([]string, 0, len(sources))
+		for source := range sources {
+			sourcesList = append(sourcesList, source)
+		}
+		log.Printf("%s %s (%d)\n", subdomain, sourcesList, len(sources))
+	}
+	log.Println("PRINTING SOURCE MAP DONE")
+	log.Println("--------------------------------")
 
 	// Convert string to []string
 	subdomains := strings.Split(output.String(), "\n")

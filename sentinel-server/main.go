@@ -1,16 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
-	"github.com/0xgwyn/sentinel/sentinel-server/common"
-	"github.com/0xgwyn/sentinel/sentinel-server/router"
+	"github.com/0xgwyn/sentinel/common"
+	"github.com/0xgwyn/sentinel/database"
+	"github.com/0xgwyn/sentinel/router"
 )
 
 func main() {
@@ -21,26 +19,20 @@ func main() {
 }
 
 func run() error {
-	// init env
-	err := common.LoadEnv()
+	// init db
+	err := database.InitDB()
 	if err != nil {
 		return err
 	}
 
-	// init db
-	err = common.InitDB()
-	if err != nil {
-		return err
-	}
+	// defer closing db
+	defer database.CloseDB()
 
 	// seeding phase
-	/*err = common.Seeding()
+	/*err = database.Seeding()
 	if err != nil {
 		return err
 	}*/
-
-	// defer closing db
-	defer common.CloseDB()
 
 	// create app
 	app := fiber.New()
@@ -55,11 +47,10 @@ func run() error {
 
 	// start server
 	var port string
-	if port = os.Getenv("PORT"); port == "" {
+	if port, err = common.LoadEnv("PORT"); port == "" {
 		port = "9000"
 	}
 	app.Listen(":" + port)
-	fmt.Println("testing")
 
 	return nil
 }

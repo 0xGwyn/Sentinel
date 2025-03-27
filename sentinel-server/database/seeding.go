@@ -1,12 +1,13 @@
-package common
+package database
 
 import (
 	"context"
 	"log"
 	"time"
 
-	"github.com/0xgwyn/sentinel/sentinel-server/models"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
+
+	"github.com/0xgwyn/sentinel/models"
 )
 
 func Seeding() error {
@@ -24,8 +25,8 @@ func Seeding() error {
 		Title:      "Apple",
 		CDN:        "Akamai",
 		Technology: "React",
-		CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-24 * time.Hour)),
-		UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+		CreatedAt:  bson.NewDateTimeFromTime(time.Now().Add(-24 * time.Hour)),
+		UpdatedAt:  bson.NewDateTimeFromTime(time.Now()),
 	}
 
 	domain2 := models.Domain{
@@ -40,8 +41,8 @@ func Seeding() error {
 		Title:      "Example Domain",
 		CDN:        "Cloudflare",
 		Technology: "Nginx",
-		CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-24 * time.Hour)),
-		UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+		CreatedAt:  bson.NewDateTimeFromTime(time.Now().Add(-24 * time.Hour)),
+		UpdatedAt:  bson.NewDateTimeFromTime(time.Now()),
 		ARecords:   []string{"192.0.2.1", "192.0.2.2"},
 		Providers:  []string{"crtsh", "subfinder"},
 	}
@@ -58,8 +59,8 @@ func Seeding() error {
 		Title:      "Google",
 		CDN:        "Google Cloud CDN",
 		Technology: "Google Web Server",
-		CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-48 * time.Hour)),
-		UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+		CreatedAt:  bson.NewDateTimeFromTime(time.Now().Add(-48 * time.Hour)),
+		UpdatedAt:  bson.NewDateTimeFromTime(time.Now()),
 
 		ARecords:  []string{"172.217.6.68", "172.217.6.67"},
 		Providers: []string{"abuseipdb", "subfinder"},
@@ -72,8 +73,8 @@ func Seeding() error {
 		Title:      "Gmail",
 		CDN:        "",
 		Technology: "Google Web Server",
-		CreatedAt:  primitive.NewDateTimeFromTime(time.Now().Add(-48 * time.Hour)),
-		UpdatedAt:  primitive.NewDateTimeFromTime(time.Now()),
+		CreatedAt:  bson.NewDateTimeFromTime(time.Now().Add(-48 * time.Hour)),
+		UpdatedAt:  bson.NewDateTimeFromTime(time.Now()),
 		Providers:  []string{"subfinder"},
 	}
 
