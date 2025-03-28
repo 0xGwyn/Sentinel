@@ -5,9 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"path/filepath"
-	"strings"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/levels"
@@ -16,16 +14,19 @@ import (
 	// logutil "github.com/projectdiscovery/utils/log"
 )
 
-func RunSubfinder(domain string) ([]string, error) {
+func RunSubfinder(domain string) (map[string][]string, error) {
 
 	subfinderOpts := &runner.Options{
-		Silent:             true,
+		Silent: true,
+		// Verbose:            true,
 		All:                true,
+		Version:            true,
 		Threads:            10,
 		Timeout:            30,
 		MaxEnumerationTime: 10,
-		Config:             filepath.Join(folderutil.HomeDirOrDefault(""), ".config/subfinder/config.yaml"),
-		ProviderConfig:     filepath.Join(folderutil.HomeDirOrDefault(""), ".config/subfinder/provider-config.yaml"),
+		// somehow the config or provider variables don't apply to the actual program
+		Config:         filepath.Join(folderutil.HomeDirOrDefault(""), ".config/subfinder/config.yaml"),
+		ProviderConfig: filepath.Join(folderutil.HomeDirOrDefault(""), ".config/subfinder/provider-config.yaml"),
 	}
 
 	// disable timestamps in logs / configure logger
@@ -45,29 +46,14 @@ func RunSubfinder(domain string) ([]string, error) {
 		return nil, fmt.Errorf("failed to enumerate single domain(%v): %v", domain, err)
 	}
 
-	// print the output
-	log.Println("PRINTING OUTPUT:")
-	log.Println(output.String())
-
-	// Or use sourceMap to access the results in your application
-	log.Println("--------------------------------")
-	log.Println("PRINTING SOURCE MAP:")
+	// use sourceMap to access the results in the application
+	subdomains := make(map[string][]string, len(sourceMap))
 	for subdomain, sources := range sourceMap {
 		sourcesList := make([]string, 0, len(sources))
 		for source := range sources {
 			sourcesList = append(sourcesList, source)
 		}
-		log.Printf("%s %s (%d)\n", subdomain, sourcesList, len(sources))
-	}
-	log.Println("PRINTING SOURCE MAP DONE")
-	log.Println("--------------------------------")
-
-	// Convert string to []string
-	subdomains := strings.Split(output.String(), "\n")
-
-	// Remove the last element if it's an empty string
-	if subdomains[len(subdomains)-1] == "" {
-		subdomains = subdomains[:len(subdomains)-1]
+		subdomains[subdomain] = sourcesList
 	}
 
 	// enable timestamps in logs / configure logger

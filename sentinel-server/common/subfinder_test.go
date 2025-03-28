@@ -1,7 +1,7 @@
 package common
 
 import (
-	"fmt"
+	"log"
 	"testing"
 )
 
@@ -10,5 +10,7 @@ func TestRunSubfinder(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(subdomains)
+	for subdomain, source := range subdomains {
+		log.Println(subdomain, source)
+	}
 }
