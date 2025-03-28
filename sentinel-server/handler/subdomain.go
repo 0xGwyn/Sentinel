@@ -13,8 +13,8 @@ import (
 )
 
 func DeleteSubdomain(c *fiber.Ctx) error {
-	domainName := c.Params("domainName")
-	subdomainName := c.Params("subdomainName")
+	domainName := strings.ToLower(c.Params("domainName"))
+	subdomainName := strings.ToLower(c.Params("subdomainName"))
 	coll := database.GetDBCollection("subdomains")
 
 	// delete the requested subdomain
@@ -30,12 +30,12 @@ func DeleteSubdomain(c *fiber.Ctx) error {
 }
 
 func AddSubdomains(c *fiber.Ctx) error {
-	domainName := c.Params("domainName")
+	domainName := strings.ToLower(c.Params("domainName"))
 	coll := database.GetDBCollection("subdomains")
 
 	// Parse the body
-	newSubdomains := new([]string)
-	if err := c.BodyParser(newSubdomains); err != nil {
+	newSubdomains := []string{}
+	if err := c.BodyParser(&newSubdomains); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -54,10 +54,10 @@ func AddSubdomains(c *fiber.Ctx) error {
 	defer cursor.Close(c.Context())
 
 	// Get the name of all subdomains inside the collection
-	oldSubdomains := make([]string, 0)
+	oldSubdomains := []string{}
 	for cursor.Next(c.Context()) {
-		subdomain := new(models.Subdomain)
-		err := cursor.Decode(subdomain)
+		subdomain := models.Subdomain{}
+		err := cursor.Decode(&subdomain)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
@@ -68,14 +68,14 @@ func AddSubdomains(c *fiber.Ctx) error {
 	}
 
 	// Trim spaces from all subdomains
-	for i := range *newSubdomains {
-		(*newSubdomains)[i] = strings.TrimSpace((*newSubdomains)[i])
+	for i := range newSubdomains {
+		newSubdomains[i] = strings.TrimSpace(newSubdomains[i])
 	}
 
 	// Make the new subdomains unique then compare old ones(in DB) with
 	// the new ones(in the request) and if no subdomain is new, let the
 	// user know
-	newUniqueSubdomains := sliceutil.Dedupe(*newSubdomains)
+	newUniqueSubdomains := sliceutil.Dedupe(newSubdomains)
 	_, subsToBeAdded := sliceutil.Diff(oldSubdomains, newUniqueSubdomains)
 	if subsToBeAdded == nil {
 		return c.Status(200).JSON(fiber.Map{
@@ -103,16 +103,16 @@ func AddSubdomains(c *fiber.Ctx) error {
 }
 
 func GetSubdomain(c *fiber.Ctx) error {
-	domainName := c.Params("domainName")
-	subdomainName := c.Params("subdomainName")
+	domainName := strings.ToLower(c.Params("domainName"))
+	subdomainName := strings.ToLower(c.Params("subdomainName"))
 	coll := database.GetDBCollection("subdomains")
 
 	// find the requested subdomain
-	subdomain := new(models.Subdomain)
+	subdomain := models.Subdomain{}
 	filter := bson.M{"domain": domainName, "name": subdomainName}
 	projection := bson.M{"_id": 0}
 	opts := options.FindOne().SetProjection(projection)
-	if err := coll.FindOne(c.Context(), filter, opts).Decode(subdomain); err != nil {
+	if err := coll.FindOne(c.Context(), filter, opts).Decode(&subdomain); err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})

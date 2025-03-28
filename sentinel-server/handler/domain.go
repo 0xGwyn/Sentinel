@@ -12,19 +12,31 @@ import (
 )
 
 func UpdateDomain(c *fiber.Ctx) error {
-	domainName := c.Params("domainName")
+	domainName := strings.ToLower(c.Params("domainName"))
 	coll := database.GetDBCollection("domains")
 
 	// Parse the body
-	domain := new(models.Domain)
-	if err := c.BodyParser(domain); err != nil {
+	domain := models.Domain{}
+	if err := c.BodyParser(&domain); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
+	// Convert all elements in InScope and OutOfScope to lowercase
+	if domain.InScope != nil {
+		for i, v := range domain.InScope {
+			domain.InScope[i] = strings.ToLower(v)
+		}
+	}
+	if domain.OutOfScope != nil {
+		for i, v := range domain.OutOfScope {
+			domain.OutOfScope[i] = strings.ToLower(v)
+		}
+	}
+
 	// Update the scope of the domain if it exists
-	filter := bson.M{"name": strings.ToLower(domainName)}
+	filter := bson.M{"name": domainName}
 	var update bson.M
 	if domain.InScope != nil && domain.OutOfScope != nil {
 		update = bson.M{
@@ -51,16 +63,16 @@ func UpdateDomain(c *fiber.Ctx) error {
 }
 
 func GetDomain(c *fiber.Ctx) error {
-	domainName := c.Params("domainName")
+	domainName := strings.ToLower(c.Params("domainName"))
 	domainsColl := database.GetDBCollection("domains")
 	subdomainsColl := database.GetDBCollection("subdomains")
 
 	// find the requested domain
-	domain := new(models.Domain)
+	domain := models.Domain{}
 	domainFilter := bson.M{"name": domainName}
 	domainProjection := bson.M{"name": 1, "in_scope": 1, "out_of_scope": 1}
 	domainOpts := options.FindOne().SetProjection(domainProjection)
-	if err := domainsColl.FindOne(c.Context(), domainFilter, domainOpts).Decode(domain); err != nil {
+	if err := domainsColl.FindOne(c.Context(), domainFilter, domainOpts).Decode(&domain); err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -81,8 +93,8 @@ func GetDomain(c *fiber.Ctx) error {
 	// iterate over the cursor
 	subdomains := make([]string, 0)
 	for cursor.Next(c.Context()) {
-		subdomain := new(models.Subdomain)
-		err := cursor.Decode(subdomain)
+		subdomain := models.Subdomain{}
+		err := cursor.Decode(&subdomain)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
@@ -115,8 +127,8 @@ func GetDomains(c *fiber.Ctx) error {
 	// iterate over the cursor
 	domains := make([]string, 0)
 	for cursor.Next(c.Context()) {
-		domain := new(models.Domain)
-		err := cursor.Decode(domain)
+		domain := models.Domain{}
+		err := cursor.Decode(&domain)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"error": err.Error(),
@@ -135,8 +147,8 @@ func CreateDomain(c *fiber.Ctx) error {
 	coll := database.GetDBCollection("domains")
 
 	// Parse the body
-	domain := new(models.Domain)
-	if err := c.BodyParser(domain); err != nil {
+	domain := models.Domain{}
+	if err := c.BodyParser(&domain); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -152,14 +164,14 @@ func CreateDomain(c *fiber.Ctx) error {
 	// Check if either out of scope or in scope is not set (at least one should be set)
 	if len(domain.InScope) == 0 && len(domain.OutOfScope) == 0 {
 		return c.Status(400).JSON(fiber.Map{
-			"error": "either in_scope or out_of_scope is required",
+			"error": "in_scope or out_of_scope is required",
 		})
 	}
 
 	// Check if the domain already exists in the collection
 	filter := bson.M{"name": strings.ToLower(domain.Name)}
-	existingDomain := new(models.Domain)
-	if err := coll.FindOne(c.Context(), filter).Decode(existingDomain); err == nil {
+	existingDomain := models.Domain{}
+	if err := coll.FindOne(c.Context(), filter).Decode(&existingDomain); err == nil {
 		return c.Status(409).JSON(fiber.Map{
 			"error": "domain already exists",
 		})
@@ -178,7 +190,7 @@ func CreateDomain(c *fiber.Ctx) error {
 }
 
 func DeleteDomain(c *fiber.Ctx) error {
-	domainName := c.Params("domainName")
+	domainName := strings.ToLower(c.Params("domainName"))
 	domainsColl := database.GetDBCollection("domains")
 	subdomainsColl := database.GetDBCollection("subdomains")
 
