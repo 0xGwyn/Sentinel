@@ -21,12 +21,7 @@ func RunDnsx(domains, questionTypes []string, threads int) ([]dnsQueryOutput, er
 	defaultOptions := dnsx.DefaultOptions
 
 	var wg sync.WaitGroup
-	var numOfGoroutines int
-	if threads > len(domains) {
-		numOfGoroutines = len(domains)
-	} else {
-		numOfGoroutines = threads
-	}
+	numOfGoroutines := min(threads, len(domains))
 	wg.Add(numOfGoroutines)
 
 	// setting query types (A, CNAME, ...)
@@ -44,7 +39,7 @@ func RunDnsx(domains, questionTypes []string, threads int) ([]dnsQueryOutput, er
 	// a struct containing a domain and multiple records are given to go routines as output
 	output := make(chan dnsQueryOutput)
 
-	for i := 0; i < numOfGoroutines; i++ {
+	for range numOfGoroutines {
 		go dnsWorker(dnsClient, input, output, &wg)
 	}
 

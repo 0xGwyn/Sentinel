@@ -26,13 +26,13 @@ func TestRunDnsx(t *testing.T) {
 		return
 	}
 
-	results, err := RunDnsx(lines, []string{"a", "mx"}, 50)
+	results, err := RunDnsx(lines, []string{"a", "cname", "txt"}, 25)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, result := range results {
-		fmt.Println(result.domain, " ", result.records)
+		fmt.Printf("%v %v\n", result.domain, result.records)
 	}
 
 }
