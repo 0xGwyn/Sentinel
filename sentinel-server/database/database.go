@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/0xgwyn/sentinel/common"
+	"github.com/0xgwyn/sentinel/config"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
@@ -16,7 +16,7 @@ func GetDBCollection(col string) *mongo.Collection {
 }
 
 func InitDB() error {
-	uri, err := common.LoadEnv("MONGODB_URI")
+	uri, err := config.LoadEnv("MONGODB_URI")
 	if err != nil {
 		return errors.New("you must set your 'MONGODB_URI' environmental variable. See\n\t https://www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
@@ -26,7 +26,7 @@ func InitDB() error {
 		return err
 	}
 
-	dbName, err := common.LoadEnv("DATABASE")
+	dbName, err := config.LoadEnv("DATABASE")
 	if err != nil {
 		return err
 	}

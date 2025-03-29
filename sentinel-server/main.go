@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
-	"github.com/0xgwyn/sentinel/common"
+	"github.com/0xgwyn/sentinel/config"
 	"github.com/0xgwyn/sentinel/database"
 	"github.com/0xgwyn/sentinel/router"
 )
@@ -47,7 +47,7 @@ func run() error {
 
 	// start server
 	var port string
-	if port, err = common.LoadEnv("PORT"); port == "" {
+	if port, err = config.LoadEnv("PORT"); port == "" {
 		port = "9000"
 	}
 	app.Listen(":" + port)
