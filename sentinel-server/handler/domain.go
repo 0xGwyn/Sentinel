@@ -37,21 +37,18 @@ func UpdateDomain(c *fiber.Ctx) error {
 
 	// Update the scope of the domain if it exists
 	filter := bson.M{"name": domainName}
-	var update bson.M
-	if domain.InScope != nil && domain.OutOfScope != nil {
-		update = bson.M{
-			"$set": bson.M{"in_scope": domain.InScope, "out_of_scope": domain.OutOfScope},
-		}
-	} else if domain.InScope == nil && domain.OutOfScope != nil {
-		update = bson.M{"$set": bson.M{"out_of_scope": domain.OutOfScope}}
-	} else if domain.InScope != nil && domain.OutOfScope == nil {
-		update = bson.M{"$set": bson.M{"in_scope": domain.InScope}}
-	} else {
-		return c.Status(500).JSON(fiber.Map{
-			"error": "either in_scope or out_of_scope is needed",
-		})
+	update := bson.M{}
+	if domain.InScope != nil {
+		update["in_scope"] = domain.InScope
+	}
+	if domain.OutOfScope != nil {
+		update["out_of_scope"] = domain.OutOfScope
+	}
+	if len(update) == 0 {
+		return c.Status(400).JSON(fiber.Map{"error": "either in_scope or out_of_scope is needed"})
 	}
 
+	update = bson.M{"$set": update}
 	result, err := coll.UpdateOne(c.Context(), filter, update)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
@@ -175,6 +172,18 @@ func CreateDomain(c *fiber.Ctx) error {
 		return c.Status(409).JSON(fiber.Map{
 			"error": "domain already exists",
 		})
+	}
+
+	// Convert all elements in InScope and OutOfScope to lowercase
+	if domain.InScope != nil {
+		for i, v := range domain.InScope {
+			domain.InScope[i] = strings.ToLower(v)
+		}
+	}
+	if domain.OutOfScope != nil {
+		for i, v := range domain.OutOfScope {
+			domain.OutOfScope[i] = strings.ToLower(v)
+		}
 	}
 
 	// create the domain also save the domain in lowercase
