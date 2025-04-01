@@ -84,6 +84,7 @@ func AddSubdomains(c *fiber.Ctx) error {
 	}
 
 	// Create new subdomains then insert them to mongodb
+	subdomainsToInsert := []models.Subdomain{}
 	for _, name := range subsToBeAdded {
 		subdomain := models.Subdomain{
 			Domain:    strings.ToLower(domainName),
@@ -91,12 +92,14 @@ func AddSubdomains(c *fiber.Ctx) error {
 			CreatedAt: bson.NewDateTimeFromTime(time.Now()),
 			UpdatedAt: bson.NewDateTimeFromTime(time.Now()),
 		}
-		_, err := coll.InsertOne(c.Context(), subdomain)
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
+		subdomainsToInsert = append(subdomainsToInsert, subdomain)
+	}
+
+	_, err = coll.InsertMany(c.Context(), subdomainsToInsert)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	return c.Status(200).JSON(subsToBeAdded)
