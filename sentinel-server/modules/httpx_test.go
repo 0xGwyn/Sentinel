@@ -22,8 +22,9 @@ func TestRunHttpx(t *testing.T) {
 	// 	fmt.Println("Error scanning file:", err)
 	// 	return
 	// }
-
-	err := RunHttpx([]string{"memoryleaks.ir", "walmart.com"}, 50)
+	// subs := []string{"memoryleaks.ir", "https://walmart.com", "docs.projectdiscovery.io", "www.cloudflare.com"}
+	subs := []string{"www.cloudflare.com"}
+	err := RunHttpx(subs, 50)
 	if err != nil {
 		panic(err)
 	}
