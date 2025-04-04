@@ -2,8 +2,8 @@ package modules
 
 import (
 	"fmt"
-	"log"
-	"sync"
+	// "log"
+	"math"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/levels"
@@ -11,54 +11,78 @@ import (
 )
 
 type httpxOutput struct {
-	Domain       string
-	StatusCode   int
-	Title        string
-	CDN          string
-	Technology   string
-	BodySha256   string
-	Failed       bool
-	HeaderSha256 string
-	Words        int
-	Lines        int
+	Input           string
+	StatusCode      int
+	Title           string
+	CDNName         string
+	CDNType         string
+	Technologies    []string
+	Failed          bool
+	Words           int
+	Lines           int
+	Port            string
+	Location        string
+	Hashes          map[string]any
+	ResponseHeaders map[string]any
+	ContentLength   int
 }
 
-func RunHttpx(domains []string, threads int) error {
-	// increase the verbosity (optional)
-	gologger.DefaultLogger.SetMaxLevel(levels.LevelVerbose)
+func RunHttpx(domains []string, threads int) ([]httpxOutput, error) {
+	// Decreasing verbosity level to disable stdout(json output)
+	gologger.DefaultLogger.SetMaxLevel(levels.LevelFatal)
 
-	// output := []httpxOutput{}
+	output := []httpxOutput{}
 
-	var mu sync.Mutex
+	// var mu sync.Mutex
 	options := runner.Options{
-		RandomAgent:        true,
-		OutputCDN:          "true",
-		OutputServerHeader: true,
-		OutputContentType:  true,
-		Threads:            threads,
-		Methods:            "GET",
-		InputTargetHost:    domains,
-		FollowRedirects:    true,
-		JSONOutput:         true,
-		OutputWordsCount:   true,
-		// Proxy:                   "socks5://127.0.0.1:1080",
-		// Probe:                   true,
-		OutputLinesCount:        true,
-		ExtractTitle:            true,
-		Hashes:                  "sha256",
-		ResponseHeadersInStdout: true,
-		// ExtractFqdn:        true,
-
-		// MaxResponseBodySizeToSave: 2147483647, // Max body size to save
-		MaxResponseBodySizeToRead: 2147483647, // Max body size to read
+		RandomAgent:         true,
+		OutputCDN:           "true",
+		OutputServerHeader:  true,
+		OutputContentType:   true,
+		Threads:             threads,
+		Methods:             "GET",
+		InputTargetHost:     domains,
+		FollowRedirects:     true,
+		FollowHostRedirects: true,
+		JSONOutput:          true,
+		// CSVOutput:                 true,
+		// DisableStdout:             true,
+		TechDetect:                true,
+		OutputWordsCount:          true,
+		OutputLinesCount:          true,
+		ExtractTitle:              true,
+		Hashes:                    "sha256",
+		ResponseInStdout:          true,
+		ResponseHeadersInStdout:   true,
+		MaxResponseBodySizeToRead: math.MaxInt32, // Max body size to read
+		DisableStdin:              true,
 		OnResult: func(r runner.Result) {
 			// handle error
 			if r.Err != nil {
-				log.Printf("[Err] %s: %s\n", r.Input, r.Err)
+				fmt.Printf("[Err] %s: %s\n", r.Input, r.Err)
 				return
 			}
-			mu.Lock()
+			// mu.Lock()
+			output = append(output, httpxOutput{
+				Input:           r.Input,
+				StatusCode:      r.StatusCode,
+				Title:           r.Title,
+				CDNName:         r.CDNName,
+				CDNType:         r.CDNType,
+				Technologies:    r.Technologies,
+				Failed:          r.Failed,
+				Words:           r.Words,
+				Lines:           r.Lines,
+				Port:            r.Port,
+				Location:        r.Location,
+				Hashes:          r.Hashes,
+				ResponseHeaders: r.ResponseHeaders,
+				ContentLength:   r.ContentLength,
+			})
+			/*fmt.Printf("Input: %#v\n", r.Input)
+			fmt.Printf("Error string: %#v\n", r.Error)
 			fmt.Printf("URL: %#v\n", r.URL)
+			fmt.Printf("Port: %#v\n", r.Port)
 			fmt.Printf("status-code: %#v\n", r.StatusCode)
 			fmt.Printf("title: %#v\n", r.Title)
 			fmt.Printf("cdn: %#v\n", r.CDN)
@@ -66,14 +90,24 @@ func RunHttpx(domains []string, threads int) error {
 			fmt.Printf("cdn type: %#v\n", r.CDNType)
 			fmt.Printf("location: %#v\n", r.Location)
 			fmt.Printf("tech: %#v\n", r.Technologies)
-			// fmt.Printf("tech details: %#v\n", r.TechnologyDetails)
 			fmt.Printf("hashes: %#v\n", r.Hashes)
 			fmt.Printf("failed: %#v\n", r.Failed)
 			fmt.Printf("respones-headers: %#v\n", r.ResponseHeaders)
 			fmt.Printf("words: %#v\n", r.Words)
 			fmt.Printf("lines: %#v\n", r.Lines)
-			fmt.Printf("content-length: %#v\n", r.ContentLength)
+			fmt.Printf("content-length: %#v\n", r.ContentLength)*/
+			// Silent:                    true,
+			// NoColor:                   true,
+			// Proxy:                   "socks5://127.0.0.1:1080",
+			// Probe: true,
+			// VHost: true,
+			// ExtractFqdn:        true,
+			// MaxResponseBodySizeToSave: 2147483647, // Max body size to save
+			// OnClose: func() {
+			// 	fmt.Println("ENDING")
+			// },
 			// fmt.Printf("fqdn: %#v\n", r.Fqdns)
+			// fmt.Printf("tech details: %#v\n", r.TechnologyDetails)
 			/*fmt.Printf("json: %#v\n", r.JSON(&runner.ScanOptions{
 				OutputTitle:               true,
 				OutputStatusCode:          true,
@@ -88,8 +122,8 @@ func RunHttpx(domains []string, threads int) error {
 				OutputWordsCount:          true,
 				Hashes:                    "sha256",
 			}))*/
-			fmt.Printf("\n\n")
-			mu.Unlock()
+			// fmt.Printf("\n\n")
+			// mu.Unlock()
 
 		},
 	}
@@ -100,11 +134,14 @@ func RunHttpx(domains []string, threads int) error {
 
 	httpxRunner, err := runner.New(&options)
 	if err != nil {
-		return fmt.Errorf("creating httpx runner failed: %v", err)
+		return nil, fmt.Errorf("creating httpx runner failed: %v", err)
 	}
 
 	httpxRunner.RunEnumeration()
 	httpxRunner.Close()
 
-	return nil
+	// Resetting logger level
+	gologger.DefaultLogger.SetMaxLevel(levels.LevelVerbose)
+
+	return output, nil
 }
