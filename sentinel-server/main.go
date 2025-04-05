@@ -28,11 +28,17 @@ func run() error {
 	// defer closing db
 	defer database.CloseDB()
 
-	// seeding phase
-	/*err = database.Seeding()
+	// inserting mock data
+	insertMock, err := config.LoadEnv("INSERT_MOCK_DATA")
 	if err != nil {
 		return err
-	}*/
+	}
+
+	if insertMock == "true" {
+		if err := database.InsertMockData(); err != nil {
+			return err
+		}
+	}
 
 	// create app
 	app := fiber.New()
