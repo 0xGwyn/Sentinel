@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -28,16 +30,20 @@ func run() error {
 	// defer closing db
 	defer database.CloseDB()
 
-	// inserting mock data
-	insertMock, err := config.LoadEnv("INSERT_MOCK_DATA")
-	if err != nil {
-		return err
+	// Initialize indexes unless explicitly skipped
+	if skip, _ := config.LoadEnv("SKIP_INDEXES"); skip != "true" {
+		if err := database.InitIndexes(); err != nil {
+			return err
+		}
+		log.Println("Indexes initialized successfully")
 	}
 
-	if insertMock == "true" {
+	// Insert mock data if enabled
+	if insert, _ := config.LoadEnv("INSERT_MOCK_DATA"); insert == "true" {
 		if err := database.InsertMockData(); err != nil {
 			return err
 		}
+		log.Println("Mock data inserted successfully")
 	}
 
 	// create app
