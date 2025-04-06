@@ -16,18 +16,45 @@ import (
 func DeleteSubdomain(c *fiber.Ctx) error {
 	domainName := strings.ToLower(c.Params("domainName"))
 	subdomainName := strings.ToLower(c.Params("subdomainName"))
-	coll := database.GetDBCollection("subdomains")
+	subdomainsColl := database.GetDBCollection("subdomains")
+	httpColl := database.GetDBCollection("http")
+	dnsColl := database.GetDBCollection("dns")
 
-	// delete the requested subdomain
-	filter := bson.M{"domain": domainName, "name": subdomainName}
-	result, err := coll.DeleteOne(c.Context(), filter)
+	// Delete the requested subdomain
+	subFilter := bson.M{"domain": domainName, "name": subdomainName}
+	subResult, err := subdomainsColl.DeleteOne(c.Context(), subFilter)
 	if err != nil {
-		return c.Status(200).JSON(fiber.Map{
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	if subResult.DeletedCount == 0 {
+		return c.Status(404).JSON(fiber.Map{
+			"error": "subdomain not found",
+		})
+	}
+
+	// Delete related HTTP records
+	httpFilter := bson.M{"domain": domainName, "subdomain": subdomainName}
+	_, err = httpColl.DeleteMany(c.Context(), httpFilter)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-	return c.Status(200).JSON(result)
+	// Delete related DNS records
+	dnsFilter := bson.M{"domain": domainName, "subdomain": subdomainName}
+	_, err = dnsColl.DeleteMany(c.Context(), dnsFilter)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": subdomainName + " subdomain and related records deleted successfully",
+	})
 }
 
 func AddSubdomains(c *fiber.Ctx) error {
@@ -100,18 +127,49 @@ func AddSubdomains(c *fiber.Ctx) error {
 func GetSubdomain(c *fiber.Ctx) error {
 	domainName := strings.ToLower(c.Params("domainName"))
 	subdomainName := strings.ToLower(c.Params("subdomainName"))
-	coll := database.GetDBCollection("subdomains")
+	subdomainsColl := database.GetDBCollection("subdomains")
+	httpColl := database.GetDBCollection("http")
+	dnsColl := database.GetDBCollection("dns")
 
 	// find the requested subdomain
 	subdomain := models.Subdomain{}
 	filter := bson.M{"domain": domainName, "name": subdomainName}
 	projection := bson.M{"_id": 0}
 	opts := options.FindOne().SetProjection(projection)
-	if err := coll.FindOne(c.Context(), filter, opts).Decode(&subdomain); err != nil {
+	if err := subdomainsColl.FindOne(c.Context(), filter, opts).Decode(&subdomain); err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-	return c.Status(200).JSON(subdomain)
+	// Get the latest HTTP record
+	httpRecord := models.HTTP{}
+	httpFilter := bson.M{"domain": domainName, "subdomain": subdomainName}
+	httpOpts := options.FindOne().
+		SetProjection(bson.M{"_id": 0}).
+		SetSort(bson.M{"scanning_date": -1})
+	_ = httpColl.FindOne(c.Context(), httpFilter, httpOpts).Decode(&httpRecord)
+
+	// Get the latest DNS record
+	dnsRecord := models.DNS{}
+	dnsFilter := bson.M{"domain": domainName, "subdomain": subdomainName}
+	dnsOpts := options.FindOne().
+		SetProjection(bson.M{"_id": 0}).
+		SetSort(bson.M{"resolution_date": -1})
+	_ = dnsColl.FindOne(c.Context(), dnsFilter, dnsOpts).Decode(&dnsRecord)
+
+	// Combine all data in the desired order
+	response := SubdomainResponse{
+		Subdomain: subdomain,
+		DNS:       dnsRecord,
+		HTTP:      httpRecord,
+	}
+
+	return c.Status(200).JSON(response)
+}
+
+type SubdomainResponse struct {
+	Subdomain models.Subdomain `json:"subdomain"`
+	DNS       models.DNS       `json:"latest_dns"`
+	HTTP      models.HTTP      `json:"latest_http"`
 }

@@ -202,8 +202,10 @@ func DeleteDomain(c *fiber.Ctx) error {
 	domainName := strings.ToLower(c.Params("domainName"))
 	domainsColl := database.GetDBCollection("domains")
 	subdomainsColl := database.GetDBCollection("subdomains")
+	httpColl := database.GetDBCollection("http")
+	dnsColl := database.GetDBCollection("dns")
 
-	// delete the requested domain if it exists
+	// Delete the requested domain if it exists
 	domainsFilter := bson.M{"name": domainName}
 	result, err := domainsColl.DeleteOne(c.Context(), domainsFilter)
 	if err != nil {
@@ -212,12 +214,12 @@ func DeleteDomain(c *fiber.Ctx) error {
 		})
 	}
 	if result.DeletedCount == 0 {
-		return c.Status(500).JSON(fiber.Map{
-			"error": "the domain does not exist",
+		return c.Status(404).JSON(fiber.Map{
+			"error": "domain not found",
 		})
 	}
 
-	// delete all subdomains of that domain
+	// Delete all subdomains of that domain
 	subdomainsFilter := bson.M{"domain": domainName}
 	_, err = subdomainsColl.DeleteMany(c.Context(), subdomainsFilter)
 	if err != nil {
@@ -226,7 +228,25 @@ func DeleteDomain(c *fiber.Ctx) error {
 		})
 	}
 
+	// Delete all HTTP records of that domain
+	httpFilter := bson.M{"domain": domainName}
+	_, err = httpColl.DeleteMany(c.Context(), httpFilter)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	// Delete all DNS records of that domain
+	dnsFilter := bson.M{"domain": domainName}
+	_, err = dnsColl.DeleteMany(c.Context(), dnsFilter)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
 	return c.Status(200).JSON(fiber.Map{
-		"info": domainName + " and its subdomains are removed",
+		"message": domainName + " domain and all related records (subdomains, HTTP, DNS) have been removed",
 	})
 }
