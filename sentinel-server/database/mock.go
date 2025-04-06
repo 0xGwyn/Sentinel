@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/0xgwyn/sentinel/models"
@@ -142,6 +141,5 @@ func InsertMockData() error {
 		return err
 	}
 
-	log.Println("Mock data inserted successfully!")
 	return nil
 }
