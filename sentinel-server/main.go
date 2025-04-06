@@ -10,6 +10,7 @@ import (
 
 	"github.com/0xgwyn/sentinel/config"
 	"github.com/0xgwyn/sentinel/database"
+	"github.com/0xgwyn/sentinel/middleware"
 	"github.com/0xgwyn/sentinel/router"
 )
 
@@ -49,7 +50,8 @@ func run() error {
 	// create app
 	app := fiber.New()
 
-	// add basic middleware
+	// add middlewares
+	app.Use(middleware.NewAuthMiddleware())
 	app.Use(logger.New())
 	app.Use(recover.New())
 	app.Use(cors.New())
@@ -59,7 +61,7 @@ func run() error {
 
 	// start server
 	var port string
-	if port, err = config.LoadEnv("PORT"); port == "" {
+	if port, _ = config.LoadEnv("PORT"); port == "" {
 		port = "9000"
 	}
 	app.Listen(":" + port)
