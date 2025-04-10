@@ -46,7 +46,7 @@ func (s *Scheduler) Start() error {
 
 		_, err := s.scheduler.NewJob(
 			gocron.DurationJob(
-				time.Duration(jobDuration)*time.Second,
+				time.Duration(jobDuration)*time.Minute,
 			),
 			gocron.NewTask(
 				taskLogic,
