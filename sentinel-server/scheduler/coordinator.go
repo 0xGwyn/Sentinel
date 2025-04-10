@@ -18,6 +18,22 @@ const (
 	DnsxJob      JobType = "dnsx"
 )
 
+type JobStatus string
+
+const (
+	JobStatusPending JobStatus = "pending"
+	JobStatusSuccess JobStatus = "success"
+	JobStatusFailed  JobStatus = "failed"
+)
+
+type Job struct {
+	Type      JobType   `bson:"type"`
+	StartTime time.Time `bson:"start_time"`
+	EndTime   time.Time `bson:"end_time,omitempty"`
+	Status    JobStatus `bson:"status"`
+	Error     string    `bson:"error,omitempty"`
+}
+
 type Coordinator struct {
 	collection *mongo.Collection
 }
@@ -42,44 +58,45 @@ func (c *Coordinator) CanRun(jobType JobType) bool {
 		return true
 	}
 
-	var lastJob struct {
-		StartTime time.Time `bson:"start_time"`
-		EndTime   time.Time `bson:"end_time"`
-	}
-
+	var lastJob Job
 	if err := result.Decode(&lastJob); err != nil {
 		return true
 	}
 
 	// If the last job hasn't finished, don't start a new one
-	if lastJob.EndTime.IsZero() {
-		return false
-	}
-
-	return true
+	return !lastJob.EndTime.IsZero()
 }
 
 func (c *Coordinator) StartJob(jobType JobType) error {
-	_, err := c.collection.InsertOne(
-		context.Background(),
-		bson.M{
-			"type":       jobType,
-			"start_time": time.Now(),
-		},
-	)
+	job := Job{
+		Type:      jobType,
+		StartTime: time.Now(),
+		Status:    JobStatusPending,
+	}
+
+	_, err := c.collection.InsertOne(context.Background(), job)
 	return err
 }
 
-func (c *Coordinator) EndJob(jobType JobType) error {
-	_, err := c.collection.UpdateOne(
+func (c *Coordinator) EndJob(jobType JobType, err error) error {
+	status := JobStatusSuccess
+	job := Job{
+		EndTime: time.Now(),
+		Status:  status,
+	}
+
+	if err != nil {
+		job.Status = JobStatusFailed
+		job.Error = err.Error()
+	}
+
+	_, updateErr := c.collection.UpdateOne(
 		context.Background(),
 		bson.M{
 			"type":     jobType,
 			"end_time": bson.M{"$exists": false},
 		},
-		bson.M{
-			"$set": bson.M{"end_time": time.Now()},
-		},
+		bson.M{"$set": job},
 	)
-	return err
+	return updateErr
 }

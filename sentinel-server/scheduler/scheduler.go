@@ -10,9 +10,9 @@ import (
 )
 
 type Scheduler struct {
-	scheduler gocron.Scheduler
-	// coordinator *Coordinator
-	config Config
+	scheduler   gocron.Scheduler
+	coordinator *Coordinator
+	config      Config
 }
 
 func NewScheduler(config Config) (*Scheduler, error) {
@@ -22,9 +22,9 @@ func NewScheduler(config Config) (*Scheduler, error) {
 	}
 
 	return &Scheduler{
-		scheduler: scheduler,
-		// coordinator: NewCoordinator(),
-		config: config,
+		scheduler:   scheduler,
+		coordinator: NewCoordinator(),
+		config:      config,
 	}, nil
 }
 
@@ -54,23 +54,21 @@ func (s *Scheduler) Start() error {
 			gocron.WithName(string(jobType)+"-job"),
 			gocron.WithEventListeners(
 				gocron.BeforeJobRunsSkipIfBeforeFuncErrors(func(jobID uuid.UUID, jobName string) error {
-					// if s.coordinator.CanRun(jobType) {
-					log.Printf("before run: %s", jobName)
-					// err := s.coordinator.StartJob(jobType)
-					// if err != nil {
-					// 	return err // Skip job if StartJob fails
-					// }
-					return nil // Allow job to run
-					// }
-					// return fmt.Errorf("cannot run job(%s) - previous job still running", jobType) // Skip job
+					if s.coordinator.CanRun(jobType) {
+						err := s.coordinator.StartJob(jobType)
+						if err != nil {
+							// Skip job if StartJob fails
+							return err
+						}
+					}
+					// Skip job
+					return fmt.Errorf("cannot run job(%s) - previous job still running", jobType)
 				}),
 				gocron.AfterJobRuns(func(jobID uuid.UUID, jobName string) {
-					// s.coordinator.EndJob(jobType)
-					log.Printf("after run Completed %s", jobName)
+					s.coordinator.EndJob(jobType, nil)
 				}),
 				gocron.AfterJobRunsWithError(func(jobID uuid.UUID, jobName string, err error) {
-					// s.coordinator.EndJob(jobType)
-					log.Printf("Inside after run Completed with error %s", jobName)
+					s.coordinator.EndJob(jobType, err)
 				}),
 			),
 		)
@@ -94,19 +92,21 @@ func (s *Scheduler) Stop() {
 
 func subfinderTask() error {
 	log.Println("inside subfinder")
-	// return fmt.Errorf("error testing")
-	return nil
 	// Subfinder job
+
+	return nil
 }
 
 func httpxTask() error {
 	log.Println("inside httpx")
 	// Httpx job
+
 	return nil
 }
 
 func dnsxTask() error {
 	log.Println("inside dnsx")
+
 	// Dnsx job
 	return nil
 }
