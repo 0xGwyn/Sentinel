@@ -7,14 +7,17 @@ import (
 	"io"
 	"path/filepath"
 
-	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/gologger/levels"
 	"github.com/projectdiscovery/subfinder/v2/pkg/runner"
 	folderutil "github.com/projectdiscovery/utils/folder"
 	// logutil "github.com/projectdiscovery/utils/log"
 )
 
-func RunSubfinder(domain string) (map[string][]string, error) {
+type subfinderOutput struct {
+	subdomain string
+	provider  []string
+}
+
+func RunSubfinder(domain string) ([]subfinderOutput, error) {
 
 	subfinderOpts := &runner.Options{
 		Silent: true,
@@ -23,17 +26,17 @@ func RunSubfinder(domain string) (map[string][]string, error) {
 		Version:            true,
 		Threads:            10,
 		Timeout:            30,
+		CaptureSources:     true,
 		MaxEnumerationTime: 10,
-		// somehow the config or provider variables don't apply to the actual program
-		Config:         filepath.Join(folderutil.HomeDirOrDefault(""), ".config/subfinder/config.yaml"),
-		ProviderConfig: filepath.Join(folderutil.HomeDirOrDefault(""), ".config/subfinder/provider-config.yaml"),
+		Config:             filepath.Join(folderutil.HomeDirOrDefault(""), ".config/subfinder/config.yaml"),
+		ProviderConfig:     filepath.Join(folderutil.HomeDirOrDefault(""), ".config/subfinder/provider-config.yaml"),
 	}
 
 	// disable timestamps in logs / configure logger
 	// logutil.DisableDefaultLogger()
 
 	// making gologger silent
-	gologger.DefaultLogger.SetMaxLevel(levels.LevelSilent)
+	// gologger.DefaultLogger.SetMaxLevel(levels.LevelVerbose)
 	subfinder, err := runner.NewRunner(subfinderOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create subfinder runner: %v", err)
@@ -46,18 +49,22 @@ func RunSubfinder(domain string) (map[string][]string, error) {
 		return nil, fmt.Errorf("failed to enumerate single domain(%v): %v", domain, err)
 	}
 
-	// use sourceMap to access the results in the application
-	subdomains := make(map[string][]string, len(sourceMap))
+	// Convert map to slice of subfinderOutput
+	results := make([]subfinderOutput, 0, len(sourceMap))
 	for subdomain, sources := range sourceMap {
 		sourcesList := make([]string, 0, len(sources))
 		for source := range sources {
 			sourcesList = append(sourcesList, source)
 		}
-		subdomains[subdomain] = sourcesList
+		results = append(results, subfinderOutput{
+			subdomain: subdomain,
+			provider:  sourcesList,
+		})
 	}
 
 	// enable timestamps in logs / configure logger
 	// logutil.EnableDefaultLogger()
 
-	return subdomains, nil
+	return results, nil
+
 }
