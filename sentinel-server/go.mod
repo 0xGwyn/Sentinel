@@ -8,6 +8,7 @@ require (
 	github.com/dchest/validator v0.0.0-20191217151620-8e45250f2371
 	github.com/go-co-op/gocron/v2 v2.16.1
 	github.com/gofiber/fiber/v2 v2.52.6
+	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/miekg/dns v1.1.64
 	github.com/projectdiscovery/dnsx v1.2.2
@@ -59,7 +60,6 @@ require (
 	github.com/google/go-github/v30 v30.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/hako/durafmt v0.0.0-20210316092057-3a2c319c1acd // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
