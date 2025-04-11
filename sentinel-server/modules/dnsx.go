@@ -12,8 +12,8 @@ import (
 )
 
 type dnsQueryOutput struct {
-	domain  string
-	records map[string][]string
+	Domain  string
+	Records map[string][]string
 }
 
 func RunDnsx(domains, questionTypes []string, threads int) ([]dnsQueryOutput, error) {
@@ -103,7 +103,7 @@ func dnsWorker(dnsClient *dnsx.DNSX, domains <-chan string, output chan<- dnsQue
 		if 0 < len(rawResp.CAA) {
 			queryResponse["caa"] = rawResp.CAA
 		}
-		output <- dnsQueryOutput{domain: domain, records: queryResponse}
+		output <- dnsQueryOutput{Domain: domain, Records: queryResponse}
 	}
 }
 

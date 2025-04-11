@@ -11,6 +11,6 @@ func TestRunSubfinder(t *testing.T) {
 		panic(err)
 	}
 	for index, output := range subdomains {
-		log.Println(index, output.subdomain, output.provider)
+		log.Println(index, output.Subdomain, output.Provider)
 	}
 }

@@ -13,8 +13,8 @@ import (
 )
 
 type subfinderOutput struct {
-	subdomain string
-	provider  []string
+	Subdomain string
+	Provider  []string
 }
 
 func RunSubfinder(domain string) ([]subfinderOutput, error) {
@@ -57,8 +57,8 @@ func RunSubfinder(domain string) ([]subfinderOutput, error) {
 			sourcesList = append(sourcesList, source)
 		}
 		results = append(results, subfinderOutput{
-			subdomain: subdomain,
-			provider:  sourcesList,
+			Subdomain: subdomain,
+			Provider:  sourcesList,
 		})
 	}
 

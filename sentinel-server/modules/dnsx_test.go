@@ -32,7 +32,7 @@ func TestRunDnsx(t *testing.T) {
 	}
 
 	for _, result := range results {
-		fmt.Printf("%v %v\n", result.domain, result.records)
+		fmt.Printf("%v %v\n", result.Domain, result.Records)
 	}
 
 }
