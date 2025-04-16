@@ -11,14 +11,16 @@ const (
 	FreshResolved StatusType = "fresh_resolved"
 	// subdomains that were resolved to ip address but now are not resolved to any ip
 	LastResolved StatusType = "last_resolved"
+	// subdomains that are resolved but not fresh anymore
+	ResolvedSubdomain StatusType = "resolved_subdomain"
 	// subdomains that are not resolved to any ip after being added to the database for the first time
 	UnresolvedSubdomain StatusType = "unresolved_subdomain"
-	// subdomains that have an http service behind them
+	// subdomains that have an http service behind and are fresh (first time checking for the service)
 	FreshService StatusType = "fresh_service"
+	// subdomains that have an http service behind them and are not fresh
+	NormalService StatusType = "normal_service"
 	// subdomains that have an http service behind them but the service status code has changed
 	ChangedService StatusType = "changed_service"
-	// not any of the above (after a status type change, the status type should change to this after a while.)
-	Normal StatusType = "normal"
 )
 
 type Domain struct {
@@ -33,7 +35,8 @@ type Subdomain struct {
 	CreatedAt bson.DateTime `json:"created_at,omitempty" bson:"created_at"`
 	UpdatedAt bson.DateTime `json:"updated_at,omitempty" bson:"updated_at"`
 	Providers []string      `json:"providers,omitempty" bson:"providers"`
-	Watch     bool          `json:"watch,omitempty" bson:"watch"`
+	WatchHTTP bool          `json:"watch_http,omitempty" bson:"watch_http"`
+	WatchDNS  bool          `json:"watch_dns,omitempty" bson:"watch_dns"`
 
 	// Status type of a subdomain
 	Status StatusType `json:"status,omitempty" bson:"status"`
@@ -64,7 +67,9 @@ type DNS struct {
 	Subdomain      string        `json:"subdomain,omitempty" bson:"subdomain"`
 	CnameRecords   []string      `json:"cname_records,omitempty" bson:"cname_records"`
 	ARecords       []string      `json:"a_records,omitempty" bson:"a_records"`
+	AAAARecords    []string      `json:"aaaa_records,omitempty" bson:"aaaa_records"`
 	NSRecords      []string      `json:"ns_records,omitempty" bson:"ns_records"`
 	PTRRecords     []string      `json:"ptr_records,omitempty" bson:"ptr_records"`
 	MXRecords      []string      `json:"mx_records,omitempty" bson:"mx_records"`
+	TXTRecords     []string      `json:"txt_records,omitempty" bson:"txt_records"`
 }

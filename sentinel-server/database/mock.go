@@ -31,7 +31,8 @@ func InsertMockData() error {
 		CreatedAt: bson.NewDateTimeFromTime(now.Add(-72 * time.Hour)),
 		UpdatedAt: bson.NewDateTimeFromTime(now),
 		Providers: []string{"subfinder", "crtsh"},
-		Watch:     true,
+		WatchDNS:  true,
+		WatchHTTP: true,
 		Status:    models.FreshService,
 	}
 
@@ -41,7 +42,8 @@ func InsertMockData() error {
 		CreatedAt: bson.NewDateTimeFromTime(now.Add(-48 * time.Hour)),
 		UpdatedAt: bson.NewDateTimeFromTime(now),
 		Providers: []string{"subfinder", "abuseipdb"},
-		Watch:     true,
+		WatchDNS:  true,
+		WatchHTTP: true,
 		Status:    models.FreshService,
 	}
 
@@ -51,7 +53,8 @@ func InsertMockData() error {
 		CreatedAt: bson.NewDateTimeFromTime(now.Add(-24 * time.Hour)),
 		UpdatedAt: bson.NewDateTimeFromTime(now),
 		Providers: []string{"subfinder"},
-		Watch:     true,
+		WatchDNS:  true,
+		WatchHTTP: true,
 		Status:    models.FreshService,
 	}
 
@@ -61,7 +64,8 @@ func InsertMockData() error {
 		CreatedAt: bson.NewDateTimeFromTime(now.Add(-96 * time.Hour)),
 		UpdatedAt: bson.NewDateTimeFromTime(now),
 		Providers: []string{"subfinder", "crtsh", "censys"},
-		Watch:     true,
+		WatchDNS:  true,
+		WatchHTTP: true,
 		Status:    models.FreshService,
 	}
 
@@ -71,7 +75,8 @@ func InsertMockData() error {
 		CreatedAt: bson.NewDateTimeFromTime(now.Add(-72 * time.Hour)),
 		UpdatedAt: bson.NewDateTimeFromTime(now),
 		Providers: []string{"subfinder", "censys"},
-		Watch:     true,
+		WatchDNS:  true,
+		WatchHTTP: true,
 		Status:    models.FreshService,
 	}
 
