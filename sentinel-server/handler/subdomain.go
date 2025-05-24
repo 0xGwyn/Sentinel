@@ -100,7 +100,8 @@ func AddSubdomains(c *fiber.Ctx) error {
 				Name:      strings.ToLower(name),
 				CreatedAt: bson.NewDateTimeFromTime(time.Now()),
 				UpdatedAt: bson.NewDateTimeFromTime(time.Now()),
-				Status:    models.FreshSubdomain,
+				Providers: []string{"manual"},
+				DNSStatus: models.FreshSubdomain,
 				WatchDNS:  true,
 				WatchHTTP: true,
 			}
