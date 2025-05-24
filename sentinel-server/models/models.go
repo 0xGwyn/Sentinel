@@ -5,6 +5,8 @@ import "go.mongodb.org/mongo-driver/v2/bson"
 type StatusType string
 
 const (
+	// DNS STATUS
+
 	// freshly added subdomains
 	FreshSubdomain StatusType = "fresh_subdomain"
 	// freshly resolved subdomains
@@ -15,12 +17,17 @@ const (
 	ResolvedSubdomain StatusType = "resolved_subdomain"
 	// subdomains that are not resolved to any ip after being added to the database for the first time
 	UnresolvedSubdomain StatusType = "unresolved_subdomain"
+
+	// HTTP STATUS
+
 	// subdomains that have an http service behind and are fresh (first time checking for the service)
 	FreshService StatusType = "fresh_service"
 	// subdomains that have an http service behind them and are not fresh
 	NormalService StatusType = "normal_service"
 	// subdomains that have an http service behind them but the service status code has changed
 	ChangedService StatusType = "changed_service"
+	// subdomains that had an http service behind them but the service is no longer available
+	LastService StatusType = "last_service"
 )
 
 type Domain struct {
@@ -38,8 +45,9 @@ type Subdomain struct {
 	WatchHTTP bool          `json:"watch_http,omitempty" bson:"watch_http"`
 	WatchDNS  bool          `json:"watch_dns,omitempty" bson:"watch_dns"`
 
-	// Status type of a subdomain
-	Status StatusType `json:"status,omitempty" bson:"status"`
+	// Status types of a subdomain
+	DNSStatus  StatusType `json:"dns_status,omitempty" bson:"dns_status"`
+	HTTPStatus StatusType `json:"http_status,omitempty" bson:"http_status"`
 }
 
 type HTTP struct {
