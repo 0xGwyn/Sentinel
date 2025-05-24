@@ -31,5 +31,7 @@ func TestScheduler(t *testing.T) {
 	time.Sleep(30 * time.Second)
 
 	// Stop the scheduler
-	s.Stop()
+	if err := s.Stop(); err != nil {
+		t.Fatalf("Failed to stop scheduler: %v", err)
+	}
 }
